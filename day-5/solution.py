@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from itertools import groupby
 from operator import itemgetter, le
 from os import error
+from pprint import pprint
 import re
 
 
@@ -34,32 +35,51 @@ def input(fname):
     lines = []
     for inputLine in open(fname).read().splitlines():
         left, right = inputLine.split(" -> ")
-        leftPoint, rightPoint = list(int, left.split(",")), list(int, right.split(","))
-        lines.append([leftPoint, rightPoint])
+        leftPoint, rightPoint = list(map(int, left.split(","))), list(
+            map(int, right.split(","))
+        )
+        lines.append(sorted([leftPoint, rightPoint]))
 
+    # pprint(lines)
     return lines
 
 
 def part1(fname):
-    
-    lines = input()
+
+    lines = input(fname)
+
     lines.sort(key=lambda x: (x[0][0], x[0][1]))
-    horizontalLines = defaultdict(lambda: dict(segments=defaultdict(list), res=set()))
-    verticalLines = defaultdict(lambda: dict(segments=defaultdict(list), res=set()))
-    
+    horizontalLines = defaultdict(list)
+    verticalLines = defaultdict(list)
+    seen = set()
+
     for line in lines:
-        [[leftX, leftY], [rightX, rightY]] = line
-        if leftX == rightX:
-            horizontalLines[leftX]["segments"].append((leftY, rightY))
-        elif leftY == rightY:
-            verticalLines[leftY]["segments"].append((leftX, rightX))
+        [[x1, y1], [x2, y2]] = line
+        # print(line)
+        if y1 == y2:
+            horizontalLines[y1].append(sorted([x1, x2]))
+        elif x1 == x2:
+            verticalLines[x1].append(sorted([y1, y2]))
+
         else:
+            continue
             raise error("Impossible")
-        
+
     for k, v in horizontalLines.items():
+        v.sort()
+        for ([x1, x2], [x3, x4]) in zip(v[:-1], v[1:]):
+            if x2 >= x3:
+                for p in range(x3, min(x2, x4) + 1):
+                    seen.add((p, k))
+
+    for k, v in verticalLines.items():
+        v.sort()
         for ([y1, y2], [y3, y4]) in zip(v[:-1], v[1:]):
-            
-            
+            if y2 >= y3:
+                for p in range(y3, min(y2, y4) + 1):
+                    seen.add((p, k))
+
+    return len(seen)
 
 
 def part2(fname):
@@ -84,8 +104,8 @@ def part2(fname):
 
 if __name__ == "__main__":
 
-    print("part 1 -> test:  ", part1("day-4/test.txt"))
-    print("part 1 -> input: ", part1("day-4/input.txt"))
+    print("part 1 -> test:  ", part1("day-5/test.txt"))
+    # print("part 1 -> input: ", part1("day-4/input.txt"))
 
-    print("part 2 -> test:  ", part2("day-4/test.txt"))
-    print("part 2 -> input: ", part2("day-4/input.txt"))
+    # print("part 2 -> test:  ", part2("day-4/test.txt"))
+    # print("part 2 -> input: ", part2("day-4/input.txt"))
